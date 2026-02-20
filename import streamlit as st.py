@@ -2,6 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+import subprocess
+import sys
+
+# --- TRUQUE: Forçar a instalação do openpyxl ---
+try:
+    import openpyxl
+except ImportError:
+    st.warning("Instalando o openpyxl... Aguarde um instante.")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "openpyxl"])
+    import openpyxl
+    st.success("Instalação concluída! Recarregando...")
+    st.rerun()
 
 # --- Configuração da Página ---
 st.set_page_config(
@@ -146,4 +158,5 @@ if not df_dre_filtrado.empty:
     st.dataframe(df_dre_filtrado[['Nome do Cliente', 'Origem do Processo', 'Data', 'Responsável', 'Valor do Proposta origem']])
 else:
     st.warning("Não há dados de vendas para o período selecionado.")
+
 
