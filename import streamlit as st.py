@@ -81,4 +81,69 @@ def calcular_funil(nome_vendedor, df_propostas, df_vendas):
         status_counts = df_propostas['Estágio do Processo'].value_counts()
         qtd_negociacao_atual = status_counts.filter(like='Negociação').sum()
         qtd_proposta_atual = status_counts.filter(like='Proposta').sum()
-        qtd_agendados_atual = status_counts.filter(like='Agendados
+        qtd_agendados_atual = status_counts.filter(like='Agendados').sum()
+    
+    # Lógica Cumulativa
+    total_vendas = vendas
+    total_negociacao = qtd_negociacao_atual + total_vendas
+    total_proposta = qtd_proposta_atual + total_negociacao
+    total_agendados = qtd_agendados_atual + total_proposta
+    
+    return pd.DataFrame({
+        'Etapa': ['Agendados', 'Proposta', 'Negociação', 'Venda'],
+        'Quantidade': [total_agendados, total_proposta, total_negociacao, total_vendas]
+    })
+
+funil_paulo = calcular_funil('Paulo Silva', df_paulo_filtrado, df_dre_filtrado)
+funil_clau = calcular_funil('Claudenia Castro', df_clau_filtrado, df_dre_filtrado)
+
+# --- Conteúdo Principal do Dashboard ---
+st.title("☀️ Dashboard Comercial Mais Sol")
+st.markdown("Análise de conversão da equipa de Vendas e SDR.")
+
+st.markdown("---")
+
+# --- Seção 1: SDR ---
+st.subheader("🎯 Conversão SDR (Leads -> Agendamentos)")
+st.info("Nota: Para a visualização da conversão Diária/Semanal/Mensal do SDR, os dados do Excel precisam de ser transformados (melt) para estruturar as datas em colunas adequadas para o gráfico.")
+
+# --- Seção 2: Eficiência dos Vendedores ---
+st.header("📊 Eficiência de Vendas no Funil")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Funil: Paulo Silva")
+    fig_funil_paulo = px.funnel(
+        funil_paulo, 
+        x='Quantidade', 
+        y='Etapa',
+        color_discrete_sequence=['#F39C12']
+    )
+    st.plotly_chart(fig_funil_paulo, use_container_width=True)
+    
+    conv_paulo = (funil_paulo.iloc[3]['Quantidade'] / funil_paulo.iloc[0]['Quantidade'] * 100) if funil_paulo.iloc[0]['Quantidade'] > 0 else 0
+    st.metric(label="Taxa de Conversão Final (Agendado -> Venda)", value=f"{conv_paulo:.1f}%")
+
+with col2:
+    st.subheader("Funil: Claudenia Castro")
+    fig_funil_clau = px.funnel(
+        funil_clau, 
+        x='Quantidade', 
+        y='Etapa',
+        color_discrete_sequence=['#E67E22']
+    )
+    st.plotly_chart(fig_funil_clau, use_container_width=True)
+    
+    conv_clau = (funil_clau.iloc[3]['Quantidade'] / funil_clau.iloc[0]['Quantidade'] * 100) if funil_clau.iloc[0]['Quantidade'] > 0 else 0
+    st.metric(label="Taxa de Conversão Final (Agendado -> Venda)", value=f"{conv_clau:.1f}%")
+
+st.markdown("---")
+
+# --- Dados Tabelados ---
+st.subheader("Tabelas de Vendas Fechadas (DRE)")
+if not df_dre_filtrado.empty:
+    st.dataframe(df_dre_filtrado[['Nome do Cliente', 'Origem do Processo', 'Data', 'Responsável', 'Valor do Proposta origem']])
+else:
+    st.warning("Não há dados de vendas para o período selecionado.")
+
