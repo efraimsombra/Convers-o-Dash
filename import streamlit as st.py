@@ -27,7 +27,7 @@ st.set_page_config(
 def load_data():
     # 1. Carregar dados de Vendas (DRE) - Fechamentos
     try:
-        df_dre = pd.read_excel("DRE_Dezembro Origem Sun Janeiro e Fervereiro.xlsx")
+        df_dre = pd.read_csv("DRE_Dezembro Origem Sun Janeiro e Fervereiro.csv")
         df_dre['Data'] = pd.to_datetime(df_dre['Data'], errors='coerce')
     except Exception as e:
         st.error(f"Erro ao carregar DRE: {e}")
@@ -35,10 +35,10 @@ def load_data():
 
     # 2. Carregar Propostas em Aberto (Paulo e Claudenia)
     try:
-        df_paulo = pd.read_excel("Propostas em aberto sun Paulo.xlsx")
+        df_paulo = pd.read_csv("Propostas em aberto sun Paulo.csv")
         df_paulo['Data da criação'] = pd.to_datetime(df_paulo['Data da criação'], errors='coerce')
         
-        df_clau = pd.read_excel("Propostas em aberto sun CLau.xlsx")
+        df_clau = pd.read_csv("Propostas em aberto sun CLau.csv")
         df_clau['Data da criação'] = pd.to_datetime(df_clau['Data da criação'], errors='coerce')
     except Exception as e:
         st.error(f"Erro ao carregar Propostas: {e}")
@@ -47,7 +47,7 @@ def load_data():
     # 3. Carregar SDR (Aba específica do ficheiro Excel)
     try:
         # Ajuste o nome da aba ('SDR') ou a linha a saltar (skiprows) conforme a estrutura real do seu Excel
-        df_sdr = pd.read_excel("KPI Marketing - 2026.xlsx", sheet_name="SDR", skiprows=2) 
+        df_sdr = pd.read_csv("KPI Marketing - 2026.csv", sheet_name="SDR", skiprows=2) 
     except Exception as e:
         st.error(f"Erro ao carregar SDR: {e}")
         df_sdr = pd.DataFrame()
@@ -307,3 +307,4 @@ if not df_dre_filtrado.empty:
     st.dataframe(df_dre_filtrado[['Nome do Cliente', 'Origem do Processo', 'Data', 'Responsável', 'Valor do Proposta origem']])
 else:
     st.warning("Não há dados de vendas para o período selecionado.")
+
